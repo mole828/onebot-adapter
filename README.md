@@ -1,0 +1,1 @@
+# Onebot Adapter
