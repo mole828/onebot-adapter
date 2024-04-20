@@ -1,7 +1,7 @@
 import express from 'express';
 import WebSocket from 'ws';
 import {WebSocketProxy} from './ws_proxy';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 type WsHandler = (ws: WebSocket, req: express.Request) => void;
 
@@ -26,8 +26,14 @@ app.get('/proxy/*', (req,res)=>{
     res.send(forward_res.data);
   })
   .catch(reason=>{
+    const axios_error = reason as AxiosError;
     console.log(reason);
-    res.status(404).send("not found.")
+    if(axios_error.status){
+      res.status(axios_error.status).send(axios_error.toJSON());
+    } else {
+      res.status(400).send("unknow error.")
+    }
+    
   });
 });
 
