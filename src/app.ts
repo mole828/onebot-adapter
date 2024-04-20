@@ -2,6 +2,7 @@ import express from 'express';
 import WebSocket from 'ws';
 import {WebSocketProxy} from './ws_proxy';
 import axios, { AxiosError } from 'axios';
+import {URL} from "url";
 
 type WsHandler = (ws: WebSocket, req: express.Request) => void;
 
@@ -20,22 +21,41 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+const axiosInstance = axios.create({
+  maxRedirects: 5,
+  // proxy: {
+  //   host: '127.0.0.1',
+  //   port: 7890,
+  //   protocol: 'http',
+  // }
+})
+
 app.get('/proxy/*', (req,res)=>{
   const proxyPath = (req.params as {[key: string]: string})[0];  // 获取/proxy/后面的路径
-  axios.get(proxyPath, {params:req.query, responseType: 'arraybuffer'})
+  const handers = req.headers;
+  // const url = new URL(proxyPath);
+  // handers.host = url.host;
+  // handers['Proxy-Connection'] = 'keep-alive';
+  // req.query['is_origin'] = '1';
+  axiosInstance.get(proxyPath, {
+    params: req.query, 
+    headers: handers, 
+    responseType: 'arraybuffer',
+    timeout: 5000,
+  })
   .then(forward_res=>{
     res.set(forward_res.headers);
     res.send(forward_res.data);
   })
   .catch(reason=>{
     const axios_error = reason as AxiosError;
-    console.log(reason);
+    console.log({reason, express: req});
     if(axios_error.status){
-      res.status(axios_error.status).send(axios_error.toJSON());
+      res.status(axios_error.status);
     } else {
-      res.status(400).send("unknow error.")
+      res.status(400);
     }
-    
+    res.end();
   });
 });
 
