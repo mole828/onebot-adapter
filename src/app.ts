@@ -25,7 +25,10 @@ app.get('/proxy/*', (req,res)=>{
     res.set(forward_res.headers);
     res.send(forward_res.data);
   })
-  .catch(reason=>console.log(reason));
+  .catch(reason=>{
+    console.log(reason);
+    res.status(404).send("not found.")
+  });
 });
 
 const action2echo: Map<string,string> = new Map();
@@ -69,19 +72,33 @@ app.ws("/ws", (ws, request)=>{
             // 消息链的小节 Text -> Image -> Text ...
             const {type, data}:MessageChain = _msg;
             if(type==='image') {
-              const imageData = data as MessageChain_Image;
-              const {url} = imageData;
+              const image_data = data as MessageChain_Image;
+              const {url} = image_data;
               const proxy_url = `${request.protocol}://${request.get('host')}/proxy/${url}`;
-              const encode_url = encodeURIComponent(proxy_url);
-              imageData.url = proxy_url;
-              imageData.file = proxy_url;
-              _msg.data = imageData;
+              image_data.url = proxy_url;
+              image_data.file = proxy_url;
+              _msg.data = image_data;
             }
           })
         })
       }
     } else if (post_type){
       // post类型的判断方式
+      // console.log(post_type);
+      if(post_type==='message'){
+        const {message}:{message:Array<MessageChain>} = obj;
+        message.forEach(_msg => {
+          const {type, data} = _msg;
+          if(type==='image') {
+            const image_data = data as MessageChain_Image;
+            const {url} = image_data;
+            const proxy_url = `${request.protocol}://${request.get('host')}/proxy/${url}`;
+            image_data.url = proxy_url;
+            image_data.file = proxy_url;
+            _msg.data = image_data;
+          }
+        });
+      }
     }
 
     return JSON.stringify(obj);
