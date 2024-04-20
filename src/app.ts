@@ -59,10 +59,16 @@ app.get('/proxy/*', (req,res)=>{
   });
 });
 
+const {FORWARD_URL} = process.env;
+
+if(!FORWARD_URL){
+  console.warn("FORWARD_URL not exist.");
+}
+
 const action2echo: Map<string,string> = new Map();
 app.ws("/ws", (ws, request)=>{
   console.log('new connect')
-  const forward = new WebSocket("ws://10.0.0.42:7780", {});
+  const forward = new WebSocket(FORWARD_URL as string, {});
   console.log('create proxy');
   const upload = new WebSocketProxy(ws, forward);
   const download = new WebSocketProxy(forward, ws);
