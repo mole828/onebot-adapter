@@ -14,6 +14,8 @@ declare module 'express-serve-static-core' {
 const app = express();
 require('express-ws')(app);
 
+app.use('/', express.static('public'))
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
