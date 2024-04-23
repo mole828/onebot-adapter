@@ -64,8 +64,8 @@ function generateFilename(extension:string = '.png') {
 
 app.get('/proxy/*', (req,res)=>{
   proxy_cache(req).then(forward_res=>{
-    res.setHeader('Content-Disposition', `attachment; filename=${generateFilename()}`);
     res.set(forward_res.headers);
+    res.setHeader('Content-Disposition', `attachment; filename=${generateFilename()}`);
     res.send(forward_res.data);
   })
   .catch(reason=>{
