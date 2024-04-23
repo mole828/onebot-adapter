@@ -37,7 +37,7 @@ const proxy_cache = cache.make(async (request: express.Request)=>{
   const url = new URL(proxy_path);
   headers.host = url.host;
   const response = await axiosInstance.get(proxy_path, {
-    params: request.params,
+    params: request.query,
     headers: headers,
     responseType: 'arraybuffer',
     timeout: 5000,
