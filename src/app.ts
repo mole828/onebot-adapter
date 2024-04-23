@@ -2,6 +2,7 @@ import express from 'express';
 import WebSocket from 'ws';
 import {WebSocketProxy} from './ws_proxy';
 import axios, { AxiosError } from 'axios';
+import cache from './cache';
 import {URL} from "url";
 
 type WsHandler = (ws: WebSocket, req: express.Request) => void;
@@ -30,20 +31,24 @@ const axiosInstance = axios.create({
   // }
 })
 
-app.get('/proxy/*', (req,res)=>{
-  const proxyPath = (req.params as {[key: string]: string})[0];  // 获取/proxy/后面的路径
-  const handers = req.headers;
-  // const url = new URL(proxyPath);
-  // handers.host = url.host;
-  // handers['Proxy-Connection'] = 'keep-alive';
-  // req.query['is_origin'] = '1';
-  axiosInstance.get(proxyPath, {
-    params: req.query, 
-    headers: handers, 
+const proxy_cache = cache.make(async (request: express.Request)=>{
+  const proxy_path = (request.params as {[key: string]: string})[0];
+  const headers = request.headers;
+  const url = new URL(proxy_path);
+  headers.host = url.host;
+  const response = await axiosInstance.get(proxy_path, {
+    params: request.params,
+    headers: headers,
     responseType: 'arraybuffer',
     timeout: 5000,
-  })
-  .then(forward_res=>{
+  });
+  return response;
+}, (req)=>{
+  return req.url
+})
+
+app.get('/proxy/*', (req,res)=>{
+  proxy_cache(req).then(forward_res=>{
     res.set(forward_res.headers);
     res.send(forward_res.data);
   })
