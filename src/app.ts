@@ -47,8 +47,24 @@ const proxy_cache = cache.make(async (request: express.Request)=>{
   return req.url
 })
 
+function generateFilename(extension:string = '.png') {
+  const now = new Date();
+
+  const filename = now.getFullYear() + 
+    ('0' + (now.getMonth() + 1)).slice(-2) + 
+    ('0' + now.getDate()).slice(-2) + 
+    ('0' + now.getHours()).slice(-2) + 
+    ('0' + now.getMinutes()).slice(-2) + 
+    ('0' + now.getSeconds()).slice(-2) + 
+    extension;
+
+  return filename;
+}
+
+
 app.get('/proxy/*', (req,res)=>{
   proxy_cache(req).then(forward_res=>{
+    res.setHeader('Content-Disposition', `attachment; filename=${generateFilename()}`);
     res.set(forward_res.headers);
     res.send(forward_res.data);
   })
