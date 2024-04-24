@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  lagrange:  
+    container_name: lagrange
+    image: ghcr.io/konatadev/lagrange.onebot:edge
+    environment:
+      - UID=${MY_UID}
+      - GID=${MY_GID}
+    volumes:
+      - ./lagrange_data/:/app/data/
+
+  onebot-adapter:
+    image: ghcr.io/mole828/onebot-adapter:latest
+    container_name: fronted
+    ports:
+      - 3000:3000
+    environment:
+      - FORWARD_URL=ws://lagrange:8080
+      - TZ=Asia/Shanghai
