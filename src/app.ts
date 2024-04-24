@@ -19,7 +19,7 @@ require('express-ws')(app);
 app.use('/', express.static('public'))
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('<a href="/Stapxs-QQ-Lite-2.0">Stapxs-QQ-Lite-2.0</a>');
 });
 
 const axiosInstance = axios.create({
