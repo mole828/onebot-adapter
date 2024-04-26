@@ -4,6 +4,7 @@ import {WebSocketProxy} from './ws_proxy';
 import axios, { AxiosError } from 'axios';
 import cache from './cache';
 import {URL} from "url";
+import { exit } from 'process';
 
 type WsHandler = (ws: WebSocket, req: express.Request) => void;
 
@@ -84,6 +85,7 @@ const {FORWARD_URL} = process.env;
 
 if(!FORWARD_URL){
   console.warn("FORWARD_URL not exist.");
+  exit(1);
 }
 
 const action2echo: Map<string,string> = new Map();
