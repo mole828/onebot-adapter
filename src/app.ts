@@ -70,14 +70,24 @@ app.get('/proxy/*', (req,res)=>{
     res.send(forward_res.data);
   })
   .catch(reason=>{
-    const axios_error = reason as AxiosError;
-    console.log({reason, express: req});
+    const axios_error = reason as AxiosError<Uint8Array, any>;
+
     if(axios_error.status){
       res.status(axios_error.status);
     } else {
       res.status(400);
     }
-    res.end();
+
+    const {response} = axios_error;
+    if(response){
+      const {data} = response;
+      const s = new TextDecoder().decode(data);
+      const obj = JSON.parse(s);
+      res.send(obj);
+    } else {
+      console.log({reason, express: req});
+      res.end();
+    }
   });
 });
 
