@@ -107,12 +107,23 @@ app.ws("/ws", (ws, request)=>{
   const download = new WebSocketProxy(forward, ws);
   upload.midware = (data)=>{
     // console.log(data);
-    const {action, echo}:{action:string, echo:string}=JSON.parse(data.toString());
-    action2echo.set(action, echo); // 也许以后支持通过action修改事件，现在只用echo了
+    try {
+      const {action, echo}:{action:string, echo:string}=JSON.parse(data.toString());
+      action2echo.set(action, echo); // 也许以后支持通过action修改事件，现在只用echo了
+      return data;
+    }
+    catch (error) {
+      console.log({error, data})
+    }
     return data;
   };
   download.midware = (ws_data)=>{
-    const obj = JSON.parse(ws_data.toString());
+    let obj;
+    try {
+      obj = JSON.parse(ws_data.toString());
+    } catch (error) {
+      console.log({error, ws_data});
+    }
     const {
       echo,
       post_type,
