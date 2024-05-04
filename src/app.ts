@@ -82,8 +82,8 @@ app.get('/proxy/*', (req,res)=>{
     if(response){
       const {data} = response;
       const s = new TextDecoder().decode(data);
-      const obj = JSON.parse(s);
-      res.send(obj);
+      // const obj = JSON.parse(s);
+      res.send(s);
     } else {
       console.log({reason, express: req});
       res.end();
